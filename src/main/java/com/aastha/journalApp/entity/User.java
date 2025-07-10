@@ -22,5 +22,7 @@ public class User {
     private String username;
     @NonNull
     private String password;
+    private String role;
     @DBRef private List<JournalEntry> journalEntries = new ArrayList<>();
+
 }
