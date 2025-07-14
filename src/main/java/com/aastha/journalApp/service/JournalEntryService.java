@@ -5,6 +5,7 @@ import com.aastha.journalApp.entity.User;
 import com.aastha.journalApp.repository.JournalEntryRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +21,9 @@ public class JournalEntryService {
     private UserService userService;
 
     @Transactional
-    public void saveEntry(JournalEntry journalEntry, String username){
+    public void saveEntry(JournalEntry journalEntry, String username) {
         User byUserName = userService.findByUserName(username);
+        journalEntry.setUser(byUserName);  // ✅ Add this line to set user also
         journalEntry.setDate(LocalDateTime.now());
         JournalEntry saved = journalEntryRepository.save(journalEntry);
         byUserName.getJournalEntries().add(saved);
@@ -39,7 +41,17 @@ public class JournalEntryService {
         return journalEntryRepository.findById(id);
     }
 
-    public void deleteById(ObjectId id, String username){
-        journalEntryRepository.deleteById(id);
+    @Transactional
+    public boolean deleteById(ObjectId id){
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.findByUserName(username);
+
+        boolean removed = user.getJournalEntries().removeIf(entry -> entry.getId().equals(id));
+        if (removed) {
+            userService.saveEntry(user);
+            journalEntryRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
