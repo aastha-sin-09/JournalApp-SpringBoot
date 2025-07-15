@@ -4,6 +4,7 @@ import com.aastha.journalApp.entity.JournalEntry;
 import com.aastha.journalApp.entity.User;
 import com.aastha.journalApp.service.JournalEntryService;
 import com.aastha.journalApp.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/journal")
 public class JournalEntryController {
@@ -25,14 +27,12 @@ public class JournalEntryController {
     @Autowired
     private UserService userService;
 
-    private static final Logger logger = LoggerFactory.getLogger(JournalEntryController.class);
-
     @GetMapping
     public ResponseEntity<List<JournalEntry>> getAllJournalEntriesOfUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
-        logger.info("Fetching journal entries for user: {}", username);
+        log.info("Fetching journal entries for user: {}", username);
 
         User byUserName = userService.findByUserName(username);
 
@@ -42,11 +42,11 @@ public class JournalEntryController {
 
         List<JournalEntry> allEntries = byUserName.getJournalEntries();
         if (allEntries != null && !allEntries.isEmpty()) {
-            logger.debug("Found {} journal entries", allEntries.size());
+            log.debug("Found {} journal entries", allEntries.size());
             return new ResponseEntity<>(allEntries, HttpStatus.OK);
         }
 
-        logger.info("No journal entries found for user: {}", username);
+        log.info("No journal entries found for user: {}", username);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 if user exists but has no entries
     }
 
@@ -57,12 +57,12 @@ public class JournalEntryController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            logger.info("Creating journal entry for user: {}", username);
+            log.info("Creating journal entry for user: {}", username);
             journalEntryService.saveEntry(myEntry, username);
-            logger.debug("Journal entry created: {}", myEntry.getTitle());
+            log.debug("Journal entry created: {}", myEntry.getTitle());
             return new ResponseEntity<>(myEntry, HttpStatus.CREATED);
         } catch (Exception e) {
-            logger.error("Error while creating journal entry", e);
+            log.error("Error while creating journal entry", e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -70,14 +70,14 @@ public class JournalEntryController {
 
     @GetMapping("id/{myId}")
     public ResponseEntity<JournalEntry> getJournalEntryById(@PathVariable ObjectId myId){
-        logger.info("Fetching journal entry by ID: {}", myId);
+        log.info("Fetching journal entry by ID: {}", myId);
         Optional<JournalEntry> journalEntry = journalEntryService.findById(myId);
         if (journalEntry.isPresent()) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
 
             if (!journalEntry.get().getUser().getUsername().equals(username)) {
-                logger.warn("User {} attempted unauthorized access to journal ID {}", username, myId);
+                log.warn("User {} attempted unauthorized access to journal ID {}", username, myId);
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
 
@@ -88,14 +88,14 @@ public class JournalEntryController {
 
     @DeleteMapping("id/{myId}")
     public ResponseEntity<Void> deleteJournalEntryById(@PathVariable ObjectId myId) {
-        logger.info("Attempt to delete journal entry ID: {}", myId);
+        log.info("Attempt to delete journal entry ID: {}", myId);
         boolean deleted = journalEntryService.deleteById(myId);
 
         if (deleted) {
-            logger.debug("Journal entry {} deleted", myId);
+            log.debug("Journal entry {} deleted", myId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
-            logger.warn("Journal entry {} not found for deletion", myId);
+            log.warn("Journal entry {} not found for deletion", myId);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
@@ -106,12 +106,12 @@ public class JournalEntryController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
-        logger.info("Attempt to update journal entry ID: {}", id);
+        log.info("Attempt to update journal entry ID: {}", id);
 
         JournalEntry old = journalEntryService.findById(id).orElse(null);
         if (old != null) {
             if (old.getUser() == null || !old.getUser().getUsername().equals(username)) {
-                logger.warn("User {} attempted unauthorized access to journal ID {}", username, id);
+                log.warn("User {} attempted unauthorized access to journal ID {}", username, id);
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             if (newEntry.getTitle() != null && !newEntry.getTitle().isBlank()) {
@@ -122,10 +122,10 @@ public class JournalEntryController {
             }
 
             journalEntryService.saveEntry(old);
-            logger.debug("Updated journal entry: {}", old.getTitle());
+            log.debug("Updated journal entry: {}", old.getTitle());
             return new ResponseEntity<>(old, HttpStatus.OK);
         }
-        logger.warn("Journal entry with ID {} not found", id);
+        log.warn("Journal entry with ID {} not found", id);
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

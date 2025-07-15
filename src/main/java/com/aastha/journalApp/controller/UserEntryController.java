@@ -2,6 +2,7 @@ package com.aastha.journalApp.controller;
 
 import com.aastha.journalApp.entity.User;
 import com.aastha.journalApp.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/user")
 public class UserEntryController {
@@ -21,11 +23,9 @@ public class UserEntryController {
     @Autowired
     private UserService userService;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserEntryController.class);
-
     @PostMapping
     public void createUser(@RequestBody User user) {
-        logger.info("Creating user: {}", user.getUsername());
+        log.info("Creating user: {}", user.getUsername());
         userService.saveEntry(user);
     }
 
@@ -34,16 +34,16 @@ public class UserEntryController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUser = auth.getName();
 
-        logger.info("User {} attempting to update profile of {}", currentUser, username);
+        log.info("User {} attempting to update profile of {}", currentUser, username);
 
         if (!username.equals(currentUser)) {
-            logger.warn("User {} attempted to update another user's data: {}", currentUser, username);
+            log.warn("User {} attempted to update another user's data: {}", currentUser, username);
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);  // 🔒 Only allow self-update
         }
 
         User userInDB = userService.findByUserName(username);
         if (userInDB != null) {
-            logger.debug("Found user in DB: {}", username);
+            log.debug("Found user in DB: {}", username);
 
             if (user.getUsername() != null && !user.getUsername().isBlank()) {
                 userInDB.setUsername(user.getUsername());
@@ -53,11 +53,11 @@ public class UserEntryController {
             }
 
             userService.saveEntry(userInDB);
-            logger.debug("Updated user details for: {}", username);
+            log.debug("Updated user details for: {}", username);
             return new ResponseEntity<>(userInDB, HttpStatus.OK);
         }
 
-        logger.warn("User with username {} not found in DB", username);
+        log.warn("User with username {} not found in DB", username);
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }
