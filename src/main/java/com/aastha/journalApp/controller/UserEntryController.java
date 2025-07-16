@@ -3,16 +3,12 @@ package com.aastha.journalApp.controller;
 import com.aastha.journalApp.entity.User;
 import com.aastha.journalApp.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 
 @Slf4j
@@ -45,10 +41,10 @@ public class UserEntryController {
         if (userInDB != null) {
             log.debug("Found user in DB: {}", username);
 
-            if (user.getUsername() != null && !user.getUsername().isBlank()) {
+            if (!user.getUsername().isBlank()) {
                 userInDB.setUsername(user.getUsername());
             }
-            if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            if (!user.getPassword().isBlank()) {
                 userInDB.setPassword(user.getPassword());
             }
 

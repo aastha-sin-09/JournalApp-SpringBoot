@@ -8,3 +8,6 @@ logging:
     com:
       aastha:
         journalApp: DEBUG
+
+sentiment:
+  api_key: ${SENTIMENT_API_KEY}
