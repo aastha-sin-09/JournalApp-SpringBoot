@@ -1,6 +1,8 @@
 package com.aastha.journalApp.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "users")
 @Data
 public class User {
@@ -24,6 +28,9 @@ public class User {
 
     @NonNull
     private String password;
+
+    @NonNull
+    private String email;
 
     private List<String> roles;
 

@@ -62,4 +62,9 @@ public class UserService {
         userRepository.save(user);
         log.debug("Admin '{}' saved successfully", user.getUsername());
     }
+
+    public void sendInactivityReminderToUsers() {
+        List<User> inactiveUsers = userRepository.findUsersWithNoJournalInLastNDays(7);
+        // Later step: send email to each user
+    }
 }
