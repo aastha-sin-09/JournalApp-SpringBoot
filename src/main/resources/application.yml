@@ -21,3 +21,5 @@ logging:
 
 sentiment:
   api_key: ${SENTIMENT_API_KEY}
+
+
