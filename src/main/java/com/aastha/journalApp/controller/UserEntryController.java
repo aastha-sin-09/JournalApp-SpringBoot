@@ -2,7 +2,9 @@ package com.aastha.journalApp.controller;
 
 import com.aastha.journalApp.entity.User;
 import com.aastha.journalApp.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
+@Tag(name = "03. User Dashboard", description = "View & Update Profile")
 @Slf4j
 @RestController
 @RequestMapping("/user")
@@ -19,12 +22,7 @@ public class UserEntryController {
     @Autowired
     private UserService userService;
 
-    @PostMapping
-    public void createUser(@RequestBody User user) {
-        log.info("Creating user: {}", user.getUsername());
-        userService.saveEntry(user);
-    }
-
+    @Operation(summary = "Update User Profile", description = "Allows logged-in user to update their own profile")
     @PutMapping("/{username}")
     public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable String username) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

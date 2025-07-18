@@ -6,6 +6,8 @@ import com.aastha.journalApp.entity.User;
 import com.aastha.journalApp.service.UserDetailsServiceImpl;
 import com.aastha.journalApp.service.UserService;
 import com.aastha.journalApp.util.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "0️1. Public APIs", description = "Sign Up / Login operations")
 @Slf4j
 @RestController
 @RequestMapping("/public")
@@ -33,12 +36,14 @@ public class AuthController {
     private UserService userService;
 
 
+    @Operation(summary = "Health Check", description = "Check if the Journal App service is up")
     @GetMapping("/health-check")
     public ResponseEntity<String> healthCheck() {
         log.info("Health check endpoint hit");
         return new ResponseEntity<>("Journal App is running ✅", HttpStatus.OK);
     }
 
+    @Operation(summary = "User Signup", description = "Register a new user to the Journal App")
     @PostMapping("/signup")
     public ResponseEntity<String> signUp(@RequestBody UserSignUp userSignUp) {
         try{
@@ -58,6 +63,7 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "User Login", description = "Login user and receive JWT token")
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserLogin userLogin) {
         try{
