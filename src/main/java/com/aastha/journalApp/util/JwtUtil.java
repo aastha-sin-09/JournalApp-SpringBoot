@@ -44,7 +44,7 @@ public class JwtUtil {
                 .setSubject(username)
                 .setHeaderParam("typ", "JWT")
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5)) // 5 minutes
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 90)) // 5 minutes
                 .signWith(getSigningKey())
                 .compact();
     }

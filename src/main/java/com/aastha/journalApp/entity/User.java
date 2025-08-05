@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,7 +21,7 @@ import java.util.List;
 @Data
 public class User {
     @Id
-    private ObjectId id;
+    private String id;
 
     @Indexed(unique = true)
     @NonNull
@@ -29,9 +30,14 @@ public class User {
     @NonNull
     private String password;
 
+    @Transient
+    private String currentPassword;
+
     @NonNull
     private String email;
 
     private List<String> roles;
+
+    private String profilePicture;
 
 }

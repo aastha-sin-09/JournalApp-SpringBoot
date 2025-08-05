@@ -17,6 +17,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Tag(name = "0️1. Public APIs", description = "Sign Up / Login operations")
 @Slf4j
 @RestController
@@ -45,7 +48,7 @@ public class AuthController {
 
     @Operation(summary = "User Signup", description = "Register a new user to the Journal App")
     @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@RequestBody UserSignUp userSignUp) {
+    public ResponseEntity<?> signUp(@RequestBody UserSignUp userSignUp) {
         try{
             log.info("Creating new user: {}", userSignUp.getUsername());
 
@@ -56,7 +59,14 @@ public class AuthController {
 
             userService.saveEntry(user);
             log.info("User saved successfully: {}", userSignUp.getUsername());
-            return new ResponseEntity<>("User created", HttpStatus.CREATED);
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(userSignUp.getUsername());
+            String token = jwtUtil.generateToken(userDetails.getUsername());
+
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+
         }catch(Exception e){
             log.error("Failed to create user: {}. Reason: {}", userSignUp.getUsername(), e.getMessage());
             return new ResponseEntity<>("Signup failed", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -65,14 +75,24 @@ public class AuthController {
 
     @Operation(summary = "User Login", description = "Login user and receive JWT token")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserLogin userLogin) {
+    public ResponseEntity<?> login(@RequestBody UserLogin userLogin) {
         try{
             log.info("Logging in user: {}", userLogin.getUsername());
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLogin.getUsername(), userLogin.getPassword()));
+
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            userLogin.getUsername(),
+                            userLogin.getPassword()
+                    )
+            );
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(userLogin.getUsername());
-            String jwt = jwtUtil.generateToken(userDetails.getUsername());
-            return new ResponseEntity<>(jwt, HttpStatus.OK);
+            String token = jwtUtil.generateToken(userDetails.getUsername());
+
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            response.put("username", userLogin.getUsername());
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }catch(Exception e){
             log.warn("Login failed for username: {}. Reason: {}", userLogin.getUsername(), e.getMessage());
             return new ResponseEntity<>("Incorrect username or password", HttpStatus.NOT_FOUND);

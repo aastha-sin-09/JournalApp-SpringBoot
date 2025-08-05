@@ -2,7 +2,6 @@ package com.aastha.journalApp.repository;
 
 import com.aastha.journalApp.entity.JournalEntry;
 import com.aastha.journalApp.entity.User;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -29,7 +28,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
         activeUsersQuery.addCriteria(Criteria.where("createdAt").gte(cutOffDate));
         List<JournalEntry> recentEntries = mongoTemplate.find(activeUsersQuery, JournalEntry.class);
 
-        Set<ObjectId> activeUsers = new HashSet<>();
+        Set<String> activeUsers = new HashSet<>();
         for(JournalEntry entry : recentEntries){
             activeUsers.add(entry.getUserId());
         }

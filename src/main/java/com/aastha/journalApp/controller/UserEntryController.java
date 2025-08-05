@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import java.util.*;
 
 
 @Tag(name = "03. User Dashboard", description = "View & Update Profile")
@@ -22,9 +23,26 @@ public class UserEntryController {
     @Autowired
     private UserService userService;
 
+    @Operation(summary = "Get User Profile", description = "Get logged-in user's profile data")
+    @GetMapping
+    public ResponseEntity<User> getUserProfile() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        log.info("Fetching profile for user: {}", username);
+        User user = userService.findByUserName(username);
+
+        if (user != null) {
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        }
+
+        log.warn("User not found: {}", username);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
     @Operation(summary = "Update User Profile", description = "Allows logged-in user to update their own profile")
     @PutMapping("/{username}")
-    public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable String username) {
+    public ResponseEntity<Map<String, Object>> updateUser(@RequestBody User user, @PathVariable String username) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUser = auth.getName();
 
@@ -32,26 +50,42 @@ public class UserEntryController {
 
         if (!username.equals(currentUser)) {
             log.warn("User {} attempted to update another user's data: {}", currentUser, username);
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);  // 🔒 Only allow self-update
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(
+                            "success", false,
+                            "message", "You can only update your own profile"
+                    ));
         }
 
-        User userInDB = userService.findByUserName(username);
-        if (userInDB != null) {
-            log.debug("Found user in DB: {}", username);
-
-            if (!user.getUsername().isBlank()) {
-                userInDB.setUsername(user.getUsername());
-            }
-            if (!user.getPassword().isBlank()) {
-                userInDB.setPassword(user.getPassword());
-            }
-
-            userService.saveEntry(userInDB);
+        try {
+            User updatedUser = userService.updateUser(user);
             log.debug("Updated user details for: {}", username);
-            return new ResponseEntity<>(userInDB, HttpStatus.OK);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "user", updatedUser
+            ));
+        } catch (RuntimeException e) {
+            log.error("Failed to update user profile: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "success", false,
+                            "message", e.getMessage()
+                    ));
+        } catch (Exception e) {
+            log.error("Unexpected error updating profile: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "success", false,
+                            "message", "Internal server error"
+                    ));
         }
+    }
 
-        log.warn("User with username {} not found in DB", username);
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    @Operation(summary = "Check username availability", description = "Check if a username is available")
+    @GetMapping("/check-username")
+    public ResponseEntity<Map<String, Boolean>> checkUsernameAvailability(
+            @RequestParam String username) {
+        boolean available = userService.findByUserName(username) == null;
+        return ResponseEntity.ok(Collections.singletonMap("available", available));
     }
 }
