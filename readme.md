@@ -9,7 +9,7 @@
 ![Swagger Docs](https://img.shields.io/badge/API-Swagger_UI-yellow?logo=swagger)
 
 > 🚧 Deployed at:  
-> 🔗 **[https://journalss-backend.onrender.com/journal/swagger-ui/index.html](http://localhost:8081/journal/swagger-ui/index.html)**
+> 🔗 **[https://journalss-backend.onrender.com/journal/swagger-ui/index.html](https://journalss-backend.onrender.com/journal/swagger-ui/index.html)**
 ---
 
 ## 📖 About
@@ -94,7 +94,7 @@ docker run -p 8081:8081 --env-file .env journal-app
 
 ## 📄 API Documentation (Swagger)
 
-🔗 **[Swagger UI – Test All Endpoints](http://localhost:8081/journal/swagger-ui/index.html)**
+🔗 **[Swagger UI – Test All Endpoints](https://journalss-backend.onrender.com/journal/swagger-ui/index.html)**
 
 Example endpoints:
 - `POST /auth/signup` – Create a new user
